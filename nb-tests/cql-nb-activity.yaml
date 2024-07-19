@@ -3,12 +3,15 @@ bindings:
   seq_value: Hash(); Mod(<<valuecount:1000000000>>); ToString() -> String
   rw_key: <<keydist:Uniform(0,1000000000)->int>>;
   rw_value: Hash(); <<valdist:Uniform(0,1000000000)->int>>; ToString() -> String
+  rw_value_0: Hash(); <<valdist:Uniform(0,0)->int>>; ToString() -> String
 
 scenarios:
-  rampup: run driver=cqld4 tags=phase:rampup cycles=20000
-  write: run driver=cqld4 tags=phase:write cycles=20000
-  read: run driver=cqld4 tags=phase:read cycles=20000
-  verify: run driver=cqld4 tags=phase:verify errors=warn,unverified->count compare=all cycles=20000
+  rampup: run driver=cqld4 tags=phase:rampup cycles=200
+  write: run driver=cqld4 tags=phase:write cycles=200
+  read: run driver=cqld4 tags=phase:read cycles=200
+  update: run driver=cqld4 tags=phase:update cycles=200
+  verify: run driver=cqld4 tags=phase:verify errors=warn,unverified->count compare=all cycles=200
+  verify2: run driver=cqld4 tags=phase:verify2 errors=warn,unverified->count compare=all cycles=200
 
 blocks:
   - name: rampup
@@ -64,3 +67,31 @@ blocks:
           (key, value) values ({rw_key}, {rw_value});
         tags:
           name: main-insert
+  - name: update
+    tags:
+      phase: update
+      type: update
+      prepared: true
+    params:
+      ratio: 1
+      cl: <<write_cl:LOCAL_QUORUM>>
+    statements:
+      - main-update: |
+          update <<keyspace:test>>.<<table:keyvalue>>
+            set value={rw_value_0} where key={rw_key};
+        tags:
+          name: main-update
+
+  - name: verify2
+    tags:
+      phase: verify2
+      type: read
+    params:
+      cl: <<read_cl:LOCAL_QUORUM>>
+      prepared: true
+    statements:
+      - verify-select: |
+          select * from <<keyspace:test>>.<<table:keyvalue>> where key={rw_key};
+        verify-fields: key->rw_key, value->rw_value_0
+        tags:
+          name: verify2

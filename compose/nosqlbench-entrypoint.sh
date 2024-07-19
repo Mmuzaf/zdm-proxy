@@ -22,7 +22,7 @@ set -e
 echo "Creating schema"
 cat /source/nb-tests/schema.cql | cqlsh zdm_tests_proxy
 
-echo "Running NoSQLBench RAMPUP job"
+echo ">>>>> Running NoSQLBench RAMPUP job"
 java -jar /nb.jar \
   --show-stacktraces \
   /source/nb-tests/cql-nb-activity.yaml \
@@ -33,7 +33,7 @@ java -jar /nb.jar \
   errors=retry \
   -v
 
-echo "Running NoSQLBench WRITE job"
+echo ">>>>> Running NoSQLBench WRITE job"
 java -jar /nb.jar \
   --show-stacktraces \
   /source/nb-tests/cql-nb-activity.yaml \
@@ -44,7 +44,7 @@ java -jar /nb.jar \
   errors=retry \
   -v
 
-echo "Running NoSQLBench READ job"
+echo ">>>>> Running NoSQLBench READ job"
 java -jar /nb.jar \
   --show-stacktraces \
   /source/nb-tests/cql-nb-activity.yaml \
@@ -55,7 +55,7 @@ java -jar /nb.jar \
   errors=retry \
   -v
 
-echo "Running NoSQLBench VERIFY job on ORIGIN"
+echo ">>>>> Running NoSQLBench VERIFY job on ORIGIN"
 java -jar /nb.jar \
   --show-stacktraces \
   --report-csv-to /source/verify-origin \
@@ -66,12 +66,34 @@ java -jar /nb.jar \
   localdc=datacenter1 \
   -v
 
-echo "Running NoSQLBench VERIFY job on TARGET"
+echo ">>>>> Running NoSQLBench VERIFY job on TARGET"
 java -jar /nb.jar \
   --show-stacktraces \
   --report-csv-to /source/verify-target \
   /source/nb-tests/cql-nb-activity.yaml \
   verify \
+  driver=cqld3 \
+  hosts=zdm_tests_target \
+  localdc=datacenter1 \
+  -v
+
+echo ">>>>> Running NoSQLBench READ job"
+java -jar /nb.jar \
+  --show-stacktraces \
+  /source/nb-tests/cql-nb-activity.yaml \
+  update \
+  driver=cqld3 \
+  hosts=zdm_tests_proxy \
+  localdc=datacenter1 \
+  errors=retry \
+  -v
+
+echo ">>>>> Running NoSQLBench VERIFY2 job on TARGET"
+java -jar /nb.jar \
+  --show-stacktraces \
+  --report-csv-to /source/verify-target \
+  /source/nb-tests/cql-nb-activity.yaml \
+  verify2 \
   driver=cqld3 \
   hosts=zdm_tests_target \
   localdc=datacenter1 \
