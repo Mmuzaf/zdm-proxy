@@ -77,7 +77,7 @@ java -jar /nb.jar \
   localdc=datacenter1 \
   -v
 
-echo ">>>>> Running NoSQLBench READ job"
+echo ">>>>> Running NoSQLBench UPDATE job"
 java -jar /nb.jar \
   --show-stacktraces \
   /source/nb-tests/cql-nb-activity.yaml \
@@ -86,6 +86,18 @@ java -jar /nb.jar \
   hosts=zdm_tests_proxy \
   localdc=datacenter1 \
   errors=retry \
+  -v
+
+
+echo ">>>>> Running NoSQLBench VERIFY2 job on ORIGIN"
+java -jar /nb.jar \
+  --show-stacktraces \
+  --report-csv-to /source/verify-origin \
+  /source/nb-tests/cql-nb-activity.yaml \
+  verify2 \
+  driver=cqld3 \
+  hosts=zdm_tests_origin \
+  localdc=datacenter1 \
   -v
 
 echo ">>>>> Running NoSQLBench VERIFY2 job on TARGET"
